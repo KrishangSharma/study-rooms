@@ -1,16 +1,33 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+// eslint.config.mjs
+import js from "@eslint/js";
+import next from "eslint-config-next";
+import tailwind from "eslint-plugin-tailwindcss";
+import prettierPlugin from "eslint-plugin-prettier";
+import prettierConfig from "eslint-config-prettier";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+const config = [
+  js.configs.recommended,
+  ...next.configs["core-web-vitals"],
+  {
+    plugins: {
+      tailwindcss: tailwind,
+      prettier: prettierPlugin,
+    },
+    rules: {
+      "prettier/prettier": ["error", { singleQuote: true, semi: true }],
+      "tailwindcss/classnames-order": "warn",
+      "react/react-in-jsx-scope": "off",
+      "@next/next/no-img-element": "off",
+    },
+    settings: {
+      tailwindcss: {
+        callees: ["classnames", "cn"],
+        config: "tailwind.config.js",
+        removeDuplicates: true,
+      },
+    },
+  },
+  prettierConfig,
 ];
 
-export default eslintConfig;
+export default config;
