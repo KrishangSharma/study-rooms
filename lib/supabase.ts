@@ -4,4 +4,4 @@ import { createClient } from '@supabase/supabase-js';
 const url = process.env.DATABASE_URL || '';
 const anonKey = process.env.DATABASE_ANON_KEY || '';
 
-const supabase = createClient(url, anonKey);
+export const supabase = createClient(url, anonKey);

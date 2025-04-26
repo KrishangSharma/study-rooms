@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "lib/"
+}
+
+model User {
+  id        String       @id @default(uuid())
+  email     String       @unique
+  password  String? // Only needed for CUSTOM auth
+  name      String?
+  avatarUrl String?
+  provider  AuthProvider @default(CUSTOM)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  sessions  Session[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+enum AuthProvider {
+  GOOGLE
+  CUSTOM
+}
