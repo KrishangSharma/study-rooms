@@ -1,4 +1,4 @@
-import { hash, compare } from 'bcrypt';
+import { hash, compare } from 'bcryptjs';
 
 // Function to Has passwords
 const hashPassword = async (password: string) => {

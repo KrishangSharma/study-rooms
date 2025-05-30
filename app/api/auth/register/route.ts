@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
     if (req.method !== 'POST') {
       return res.json({ message: 'Method not allowed!' }, { status: 405 });
     }
+    //TODO: Move avtar url to profile mgmt
     const { email, password, name, avatarUrl } = await req.json();
 
     // Form Validations

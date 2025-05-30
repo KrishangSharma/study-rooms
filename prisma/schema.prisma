@@ -11,19 +11,20 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
-  output   = "lib/"
 }
 
 model User {
-  id        String       @id @default(uuid())
-  email     String       @unique
-  password  String? // Only needed for CUSTOM auth
-  name      String?
-  avatarUrl String?
-  provider  AuthProvider @default(CUSTOM)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  sessions  Session[]
+  id         String       @id @default(uuid())
+  email      String       @unique
+  password   String? // Only needed for CUSTOM auth
+  name       String?
+  avatarUrl  String?
+  isVerified Boolean      @default(false)
+  provider   AuthProvider @default(CUSTOM)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  sessions   Session[]
+  otps       UserOTP[] // Relation to OTPs
 }
 
 model Session {
@@ -33,6 +34,18 @@ model Session {
   token     String   @unique
   createdAt DateTime @default(now())
   expiresAt DateTime
+}
+
+model UserOTP {
+  id        String   @id @default(uuid())
+  otp       String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([userId])
+  @@index([expiresAt]) // helpful if you're manually clearing expired OTPs
 }
 
 enum AuthProvider {

@@ -3,7 +3,7 @@ import AuthForm from '@/components/core/forms/authForm';
 const page = () => {
   return (
     <div>
-      <AuthForm />
+      <AuthForm type="signup" />
     </div>
   );
 };
