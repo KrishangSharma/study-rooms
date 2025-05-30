@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/password';
 import { NextRequest, NextResponse as res } from 'next/server';
-import { OTPSent } from '@/react-email-starter/emails/otp-sent';
+import { OTPSent } from '@/react-email/emails/otp-sent';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
