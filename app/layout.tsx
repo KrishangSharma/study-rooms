@@ -1,7 +1,16 @@
 // app/layout.tsx
 import './globals.css';
 import type { Metadata } from 'next';
+import { Poppins } from 'next/font/google';
+import { Toaster } from '@/components/ui/sonner';
 import Providers from '@/components/core/Providers';
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  variable: '--font-poppins',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Study Rooms | By Krishang Sharma',
@@ -10,11 +19,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-gray-100 text-gray-950 dark:bg-[#030303] dark:text-gray-100">
+    <html lang="en" suppressHydrationWarning className={`${poppins.className}`}>
+      <body className="min-h-screen bg-[#fcf6ec] text-gray-950 dark:bg-[#121212] dark:text-gray-100">
         <Providers attribute="class" defaultTheme="system" enableSystem>
           {children}
         </Providers>
+        <Toaster position="top-center" />
       </body>
     </html>
   );

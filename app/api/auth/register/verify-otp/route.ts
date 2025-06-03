@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { comparePassword } from '@/lib/password';
-import { NextRequest, NextResponse as res } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,30 +9,36 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      return res.json({ message: 'User not found!' }, { status: 404 });
+      return NextResponse.json({ message: 'User not found!' }, { status: 404 });
     }
 
-    // Get the latest OTP for the user
-    const latestOtpEntry = await prisma.userOTP.findFirst({
+    // Get all OTP entries for the user
+    const otpEntries = await prisma.userOTP.findMany({
       where: {
         userId: user.id,
-        expiresAt: {
-          gte: new Date(), // Not expired
-        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    if (!latestOtpEntry) {
-      return res.json({ message: 'OTP has expired!' }, { status: 400 });
+    let matchedOtpEntry = null;
+
+    for (const entry of otpEntries) {
+      const isMatch = await comparePassword(otp, entry.otp);
+      if (isMatch) {
+        matchedOtpEntry = entry;
+        break;
+      }
     }
 
-    const isValid = await comparePassword(otp, latestOtpEntry.otp);
+    if (!matchedOtpEntry) {
+      return NextResponse.json({ message: 'Invalid OTP!' }, { status: 401 });
+    }
 
-    if (!isValid) {
-      return res.json({ message: 'Invalid OTP!' }, { status: 401 });
+    // Now check expiry
+    if (matchedOtpEntry.expiresAt < new Date()) {
+      return NextResponse.json({ message: 'OTP has expired!' }, { status: 400 });
     }
 
     await prisma.user.update({
@@ -41,11 +47,11 @@ export async function POST(req: NextRequest) {
     });
 
     // Delete OTP after use
-    await prisma.userOTP.delete({ where: { id: latestOtpEntry.id } });
+    await prisma.userOTP.delete({ where: { id: matchedOtpEntry.id } });
 
-    return res.json({ message: 'Account verified successfully' }, { status: 200 });
+    return NextResponse.json({ message: 'Account verified successfully' }, { status: 200 });
   } catch (error) {
     console.error('OTP verification error:', error);
-    return res.json({ message: 'Something went wrong' }, { status: 500 });
+    return NextResponse.json({ message: 'Something went wrong' }, { status: 500 });
   }
 }

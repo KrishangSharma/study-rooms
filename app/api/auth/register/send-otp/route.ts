@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/password';
 import { OTPSent } from '@/react-email/emails/otp-sent';
-import { NextRequest, NextResponse as res } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.findUnique({ where: { email: email } });
 
     if (!user) {
-      return res.json({ message: 'User not found!' }, { status: 404 });
+      return NextResponse.json({ message: 'User not found!' }, { status: 404 });
     }
     // Generate OTP, assign to user
     let otp = generateOTP();
@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
       },
     });
     // Send the unhashed OTP to the user VIA email
+    console.log('sending email...');
     await resend.emails.send({
       from: 'studyrooms.onboarding@resend.dev',
       to: email,
@@ -42,10 +43,11 @@ export async function POST(req: NextRequest) {
       react: OTPSent({ otp }),
     });
 
-    return res.json({ success: true }, { status: 200 });
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
+    console.log(error);
     console.log('Error generating the OTP! Please try again later!');
-    return res.json(
+    return NextResponse.json(
       { message: 'Error generating the OTP! Please try again later!' },
       { status: 500 }
     );

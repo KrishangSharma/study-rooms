@@ -18,7 +18,7 @@ const authOptions: NextAuthOptions = {
           // Check if the user exists or not
           let user = await prisma.user.findUnique({ where: { email: profile.email } });
           if (user && user.provider === 'CUSTOM') {
-            return '/login?error=AccountLinked';
+            return '/auth/signin?error=AccountLinked';
           }
 
           // If New user, create account and store to DB
@@ -37,7 +37,7 @@ const authOptions: NextAuthOptions = {
             data: {
               userId: user.id,
               token: account.access_token!,
-              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Expires in 7 days
+              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // expires in 1 month
             },
           });
 
@@ -61,8 +61,8 @@ const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: '/login', // optional: redirect Google error back to your login
-    error: '/login',
+    signIn: '/signin', // optional: redirect Google error back to your login
+    error: '/signin',
   },
   session: {
     strategy: 'jwt',

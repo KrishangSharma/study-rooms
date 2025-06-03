@@ -70,7 +70,10 @@ export const OTPSent = ({ otp = '123456' }: OTPVerificationEmailProps) => (
 
         <Section style={footer}>
           <Text style={footerText}>
-            Need help? Contact me at <a href="mailto:krishang.sharma.17704@gmail.com">My Email</a>
+            Need help?{' '}
+            <b>
+              <a href="mailto:krishang.sharma.17704@gmail.com">Contact Me.</a>
+            </b>
           </Text>
           <Text style={footerText}>Study Rooms - Making studying better, together.</Text>
         </Section>
