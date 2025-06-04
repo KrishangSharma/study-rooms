@@ -23,17 +23,7 @@ model User {
   provider   AuthProvider @default(CUSTOM)
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
-  sessions   Session[]
   otps       UserOTP[] // Relation to OTPs
-}
-
-model Session {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  token     String   @unique
-  createdAt DateTime @default(now())
-  expiresAt DateTime
 }
 
 model UserOTP {

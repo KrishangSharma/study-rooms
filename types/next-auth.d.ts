@@ -8,9 +8,9 @@ declare module 'next-auth' {
     userId: string;
     user: {
       id: string;
-      email: string;
-      name?: string;
-      image?: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
     };
   }
 
@@ -20,6 +20,13 @@ declare module 'next-auth' {
     name?: string;
     image?: string;
   }
+}
+
+interface GoogleProfile {
+  email: string;
+  name: string;
+  picture?: string;
+  image?: string;
 }
 
 declare module 'next-auth/jwt' {

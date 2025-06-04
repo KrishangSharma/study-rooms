@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import Providers from '@/components/core/Providers';
+import Navbar from '@/components/core/Navbar/Navbar';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning className={`${poppins.className}`}>
       <body className="min-h-screen bg-[#fcf6ec] text-gray-950 dark:bg-[#121212] dark:text-gray-100">
         <Providers attribute="class" defaultTheme="system" enableSystem>
+          <Navbar />
           {children}
         </Providers>
         <Toaster position="top-center" />

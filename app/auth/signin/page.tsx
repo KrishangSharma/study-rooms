@@ -1,4 +1,6 @@
 'use client';
+
+import React, { Suspense } from 'react';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -29,4 +31,10 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default function PageWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Page />
+    </Suspense>
+  );
+}

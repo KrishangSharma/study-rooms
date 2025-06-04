@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import Link from 'next/link';
+
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
@@ -42,26 +43,26 @@ export default function AuthForm({ type }: AuthFormProps) {
         ...(type === 'signup' && { name: (data as SignupFormData).name }),
       };
 
-      const response = await fetch(`/api/auth/${isLogin ? 'login' : 'register'}`, {
-        method: 'POST',
-        body: JSON.stringify(formData),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const res = (await response.json()) as Response;
-
-      if (!response.ok) {
-        toast.error(res.message || 'Something went wrong');
-        return;
-      }
-
       if (isLogin) {
-        // Redirect to home page after successful login
-        reset();
-        window.location.href = '/';
+        await handleCredentialSignIn({
+          email: formData.email,
+          password: formData.password,
+        });
       } else {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          body: JSON.stringify(formData),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const regRes = (await response.json()) as Response;
+
+        if (!response.ok) {
+          toast.error(regRes.message || 'Something went wrong');
+          return;
+        }
         // Send the verification code to the user's email
         const res = await fetch('/api/auth/register/send-otp', {
           method: 'POST',
@@ -85,6 +86,34 @@ export default function AuthForm({ type }: AuthFormProps) {
       toast.error('Something went wrong. Please try again');
     } finally {
       reset();
+      setIsLoading(false);
+    }
+  };
+
+  const handleCredentialSignIn = async ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => {
+    setIsLoading(true);
+    try {
+      const res = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: '/',
+      });
+
+      if (res?.error) {
+        toast.error(res?.error);
+      } else if (res?.ok) {
+        window.location.href = '/';
+      }
+    } catch (error) {
+      toast.error('An error occurred during sign in');
+    } finally {
       setIsLoading(false);
     }
   };
