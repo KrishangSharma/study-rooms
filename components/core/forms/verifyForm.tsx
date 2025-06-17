@@ -84,7 +84,7 @@ export default function VerifyForm({ email }: VerifyFormProps) {
 
       toast.success('Account verified successfully!');
       reset();
-      window.location.href = '/auth/signin';
+      window.location.href = '/auth/login';
     } catch (error) {
       toast.error('Failed to verify OTP. Please try again.');
     } finally {
@@ -207,7 +207,7 @@ export default function VerifyForm({ email }: VerifyFormProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" asChild className="w-full">
-                    <Link href="/auth/signin" className="flex items-center gap-2">
+                    <Link href="/auth/login" className="flex items-center gap-2">
                       Skip Verification
                       <ArrowRight className="w-4 h-4" />
                     </Link>

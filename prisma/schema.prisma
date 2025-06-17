@@ -14,16 +14,17 @@ generator client {
 }
 
 model User {
-  id         String       @id @default(uuid())
-  email      String       @unique
-  password   String? // Only needed for CUSTOM auth
-  name       String?
-  avatarUrl  String?
-  isVerified Boolean      @default(false)
-  provider   AuthProvider @default(CUSTOM)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  otps       UserOTP[] // Relation to OTPs
+  id                 String               @id @default(uuid())
+  email              String               @unique
+  password           String? // Only needed for CUSTOM auth
+  name               String?
+  avatarUrl          String?
+  isVerified         Boolean              @default(false)
+  provider           AuthProvider         @default(CUSTOM)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  otps               UserOTP[] // Relation to OTPs
+  PasswordResetToken PasswordResetToken[] // Relation to PasswordResetTokens
 }
 
 model UserOTP {
@@ -36,6 +37,19 @@ model UserOTP {
 
   @@index([userId])
   @@index([expiresAt]) // helpful if you're manually clearing expired OTPs
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  tokenHash String // Store hashed version of token
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 enum AuthProvider {

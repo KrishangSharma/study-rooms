@@ -2,26 +2,73 @@
 
 import * as React from 'react';
 import { useTheme } from 'next-themes';
-import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Monitor, Moon, Sun } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from '../ui/dropdown-menu';
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    setTheme('system');
-  }, []);
+    setMounted(true);
+    if (typeof window === 'undefined') return;
 
-  const toggleTheme = () => {
-    const newTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
+    const preferredTheme = localStorage.getItem('preferred-theme');
+    if (preferredTheme === 'light' || preferredTheme === 'dark' || preferredTheme === 'system') {
+      setTheme(preferredTheme);
+    } else {
+      setTheme('system');
+    }
+  }, [setTheme]);
+
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
+    localStorage.setItem('preferred-theme', newTheme);
     setTheme(newTheme);
   };
 
+  if (!mounted) return null;
+
+  const iconClasses = 'w-4 h-4 transition-all';
+  const iconMap = {
+    light: Sun,
+    dark: Moon,
+    system: Monitor,
+  };
+  const themeLabels: Record<string, string> = {
+    light: 'Light Theme',
+    dark: 'Dark Theme',
+    system: 'System Theme',
+  };
+
+  const current =
+    resolvedTheme === 'dark' ? 'dark' : resolvedTheme === 'light' ? 'light' : 'system';
+  const CurrentIcon = iconMap[current];
+
   return (
-    <Button variant="outline" size="sm" onClick={toggleTheme} className="px-2 cursor-pointer">
-      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      <span className="sr-only">Toggle theme</span>
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="flex items-center gap-2 px-2 ">
+          <CurrentIcon className={iconClasses} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {Object.entries(iconMap).map(([key, Icon]) => (
+          <DropdownMenuItem
+            key={key}
+            onClick={() => handleThemeChange(key as 'light' | 'dark' | 'system')}
+            className="cursor-pointer"
+          >
+            <Icon className="w-4 h-4 mr-2" />
+            {themeLabels[key]}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

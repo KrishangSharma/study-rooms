@@ -2,10 +2,8 @@
 
 import { z } from 'zod';
 import Link from 'next/link';
-
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { logInSchema } from '@/lib/schemas';
@@ -13,6 +11,7 @@ import { signUpSchema } from '@/lib/schemas';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthFormProps, Response } from '@/types/types';
 
@@ -21,6 +20,7 @@ type SignupFormData = z.infer<typeof signUpSchema>;
 
 export default function AuthForm({ type }: AuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const isLogin = type === 'signin';
 
@@ -134,7 +134,7 @@ export default function AuthForm({ type }: AuthFormProps) {
   };
 
   return (
-    <div className="w-full max-w-md">
+    <div className="sm:w-md transition-all duration-200 ease-in-out">
       <div className="bg-white dark:bg-[#191919] rounded-2xl shadow-lg border border-gray-200 dark:border-white/20 p-8 space-y-6 animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -204,19 +204,40 @@ export default function AuthForm({ type }: AuthFormProps) {
             >
               Password
             </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              {...register('password')}
-              className="h-11 border-gray-300 dark:border-white/20 focus:border-gray-900 focus:ring-0 transition-colors duration-200"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your password"
+                {...register('password')}
+                className="h-11 border-gray-300 dark:border-white/20 focus:border-gray-900 focus:ring-0 transition-colors duration-200 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground cursor-pointer hover:text-gray-900 dark:hover:text-white transition"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-xs text-red-600 animate-in fade-in-50 duration-200">
                 {errors.password.message}
               </p>
             )}
           </div>
+          {/* Forget Password */}
+          {isLogin && (
+            <div className="animate-in fade-in-50 slide-in-from-left-4 duration-200">
+              <Link
+                href="/auth/forgot-password"
+                className="hover:underline cursor-pointer text-xs text-muted-foreground"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+          )}
 
           {/* Submit Button */}
           <Button
@@ -294,7 +315,7 @@ export default function AuthForm({ type }: AuthFormProps) {
             type="button"
             className="font-medium text-gray-900 dark:text-gray-200 hover:underline transition-colors duration-200 cursor-pointer"
           >
-            <Link href={type === 'signin' ? '/auth/signup' : '/auth/signin'}>
+            <Link href={type === 'signin' ? '/auth/register' : '/auth/login'}>
               {isLogin ? 'Sign up' : 'Sign in'}
             </Link>
           </button>

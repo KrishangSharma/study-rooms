@@ -10,9 +10,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from '@/components/ui/command';
-import { Kbd } from '@/components/ui/kbd';
 import { Search } from 'lucide-react';
+import { Kbd } from '@/components/ui/kbd';
+import { useTheme } from 'next-themes';
+import { signOut, useSession } from 'next-auth/react';
 
 interface CommandMenuProps {
   isMobile?: boolean;
@@ -21,6 +24,8 @@ interface CommandMenuProps {
 export function CommandMenu({ isMobile = false }: CommandMenuProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
+  const { data: session } = useSession();
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -38,6 +43,12 @@ export function CommandMenu({ isMobile = false }: CommandMenuProps) {
     setOpen(false);
     command();
   }, []);
+
+  const toggleTheme = () => {
+    const next = resolvedTheme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('preferred-theme', next);
+    setTheme(next);
+  };
 
   return (
     <>
@@ -63,14 +74,22 @@ export function CommandMenu({ isMobile = false }: CommandMenuProps) {
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Navigation">
             <CommandItem onSelect={() => runCommand(() => router.push('/'))}>
-              <span>Home</span>
+              <span className="block">Home</span>
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => router.push('/idea'))}>
-              <span>Idea</span>
+            <CommandItem onSelect={() => runCommand(() => router.push('/user/account#profile'))}>
+              <span>Profile</span>
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => router.push('/support'))}>
-              <span>Support</span>
-            </CommandItem>
+          </CommandGroup>
+          <CommandSeparator />
+          <CommandGroup heading="User Actions">
+            {session?.user ? (
+              <CommandItem onSelect={() => runCommand(signOut)}>Log Out</CommandItem>
+            ) : (
+              <CommandItem onSelect={() => runCommand(() => router.push('/auth/login'))}>
+                Log In
+              </CommandItem>
+            )}
+            <CommandItem onSelect={() => runCommand(toggleTheme)}>Switch Theme</CommandItem>
           </CommandGroup>
         </CommandList>
       </CommandDialog>

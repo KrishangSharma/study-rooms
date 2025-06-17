@@ -2,9 +2,8 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
-import { Toaster } from '@/components/ui/sonner';
 import Providers from '@/components/core/Providers';
-import Navbar from '@/components/core/Navbar/Navbar';
+import { Toaster } from 'sonner';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -14,7 +13,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Study Rooms | By Krishang Sharma',
+  title: 'StudyioVibe | By Krishang Sharma',
   description: 'Mann laga ke padho!!',
 };
 
@@ -23,10 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning className={`${poppins.className}`}>
       <body className="min-h-screen bg-[#fcf6ec] text-gray-950 dark:bg-[#121212] dark:text-gray-100">
         <Providers attribute="class" defaultTheme="system" enableSystem>
-          <Navbar />
           {children}
+          <Toaster />
         </Providers>
-        <Toaster position="top-center" />
       </body>
     </html>
   );

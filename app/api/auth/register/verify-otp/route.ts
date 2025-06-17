@@ -46,9 +46,6 @@ export async function POST(req: NextRequest) {
       data: { isVerified: true },
     });
 
-    // Delete OTP after use
-    await prisma.userOTP.delete({ where: { id: matchedOtpEntry.id } });
-
     return NextResponse.json({ message: 'Account verified successfully' }, { status: 200 });
   } catch (error) {
     console.error('OTP verification error:', error);

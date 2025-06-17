@@ -52,7 +52,7 @@ export const authOptions: NextAuthOptions = {
         try {
           let user = await prisma.user.findUnique({ where: { email: profile.email } });
           if (user && user.provider === 'CUSTOM') {
-            return '/auth/signin?error=AccountLinked';
+            return '/auth/login?error=AccountLinked';
           }
           if (!user) {
             user = await prisma.user.create({
