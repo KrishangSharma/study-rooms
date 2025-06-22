@@ -1,7 +1,6 @@
 // Function to create a new user
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/password';
-import { AuthProvider } from '@prisma/client';
 import { NextResponse, NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -10,7 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Method not allowed!' }, { status: 405 });
     }
     //TODO: Move avtar url to profile mgmt
-    const { email, password, name, avatarUrl } = await req.json();
+    const { email, password, name } = await req.json();
 
     // Form Validations
     if (!email || !password || !name) {
@@ -32,8 +31,6 @@ export async function POST(req: NextRequest) {
         email,
         password: hashedPassword,
         name,
-        avatarUrl,
-        provider: AuthProvider.CUSTOM,
       },
     });
 

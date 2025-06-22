@@ -121,7 +121,7 @@ export default function VerifyForm({ email }: VerifyFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#fcf6ec] dark:bg-[#121212] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background dark:bg-background flex items-center justify-center p-4">
       <Card className="shadow-lg border-0 bg-white dark:bg-[#191919] w-full max-w-md">
         <CardHeader className="text-center">
           <div className="text-center">

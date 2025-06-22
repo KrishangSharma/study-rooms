@@ -13,8 +13,8 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { Search } from 'lucide-react';
-import { Kbd } from '@/components/ui/kbd';
 import { useTheme } from 'next-themes';
+import { Kbd } from '@/components/ui/kbd';
 import { signOut, useSession } from 'next-auth/react';
 
 interface CommandMenuProps {

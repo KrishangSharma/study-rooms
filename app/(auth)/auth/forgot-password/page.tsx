@@ -30,8 +30,6 @@ const ForgotPassword = () => {
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
   });
-
-  // Dummy submit handler
   const onSubmit = async (data: ForgotPasswordFormData) => {
     try {
       const res = await fetch('/api/auth/forgot-password', {
@@ -56,9 +54,9 @@ const ForgotPassword = () => {
   };
 
   return (
-    <main className="grid place-items-center w-full h-screen bg-[#fcf6ec] dark:bg-[#121212] transition-colors duration-200">
+    <main className="grid place-items-center w-full h-screen bg-background dark:bg-background transition-colors duration-200">
       {isEmailSent ? (
-        <Card className="w-full max-w-md border border-gray-200 dark:border-white/20 shadow-sm bg-white dark:bg-[#191919]">
+        <Card className="w-full max-w-md border border-gray-200 dark:border-white/20 shadow-lg bg-white dark:bg-[#191919]">
           <CardHeader className="space-y-4 text-center">
             <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
               <Mail className="w-8 h-8 text-green-600 dark:text-green-400" />

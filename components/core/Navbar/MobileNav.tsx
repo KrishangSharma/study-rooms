@@ -46,7 +46,7 @@ export function MobileNav() {
   const pathname = usePathname();
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' });
+    await signOut();
     setOpen(false);
   };
 
@@ -64,7 +64,7 @@ export function MobileNav() {
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-full bg-[#fcf6ec]/95 dark:bg-[#191919]/95 backdrop-blur-xl border-l border-slate-200/20 dark:border-slate-800/20 pr-0"
+        className="w-full bg-background/95 dark:bg-background/95 backdrop-blur-xl border-l border-slate-200/20 dark:border-slate-800/20 pr-0"
       >
         <SheetHeader className="text-left pb-4 border-b border-slate-200/20 dark:border-slate-800/20">
           <SheetTitle className="font-bold text-xl">
@@ -187,7 +187,7 @@ export function MobileNav() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-56 bg-[#fcf6ec] dark:bg-[#191919] border-slate-200/20 dark:border-slate-800/20"
+                  className="w-56 bg-background dark:bg-background border-slate-200/20 dark:border-slate-800/20"
                 >
                   <DropdownMenuLabel className="font-semibold">My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-slate-200/20 dark:bg-slate-800/20" />

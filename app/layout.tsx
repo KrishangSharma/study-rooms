@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${poppins.className}`}>
-      <body className="min-h-screen bg-[#fcf6ec] text-gray-950 dark:bg-[#121212] dark:text-gray-100">
+      <body className="min-h-screen bg-white dark:bg-background text-foreground">
         <Providers attribute="class" defaultTheme="system" enableSystem>
           {children}
           <Toaster />

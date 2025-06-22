@@ -27,7 +27,7 @@ export default function Navbar() {
   // }, [session]);
 
   return (
-    <header className="sticky top-0 z-50 w-full transition-all duration-200 backdrop-blur-sm border-b bg-[#fcf6ec]/70 dark:bg-[#121212]/50 border-gray-300 dark:border-[#212121]">
+    <header className="sticky top-0 z-50 w-full transition-all duration-200 backdrop-blur-sm border-b bg-background/50 dark:bg-background/50 border-gray-300 dark:border-[#212121]">
       <div className="px-2 lg:px-10 mx-auto flex h-20 items-center justify-between transition-all duration-200 ease-in-out">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center">
@@ -124,7 +124,7 @@ export default function Navbar() {
                   >
                     <DropdownMenuItem asChild>
                       <Link
-                        href="/user/account#profile"
+                        href="/user/account/profile"
                         className="cursor-pointer text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-muted"
                       >
                         <CircleUserRound />
@@ -133,7 +133,7 @@ export default function Navbar() {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link
-                        href="/user/account#rooms"
+                        href="/user/account/rooms"
                         className="cursor-pointer text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-muted"
                       >
                         <Archive />
@@ -142,7 +142,7 @@ export default function Navbar() {
                     </DropdownMenuItem>{' '}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      className="cursor-pointer text-red-500 hover:text-red-500 hover:bg-red-500/20"
+                      className="cursor-pointer text-red-500! hover:text-red-500! hover:bg-red-500/20!"
                       onClick={() => signOut()}
                     >
                       <LogOut />

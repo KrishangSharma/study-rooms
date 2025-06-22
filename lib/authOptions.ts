@@ -1,10 +1,14 @@
 import { prisma } from './prisma';
 import { NextAuthOptions } from 'next-auth';
 import { comparePassword } from './password';
+import { PrismaAdapter } from '@auth/prisma-adapter';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
 export const authOptions: NextAuthOptions = {
+  // @ts-expect-error This is a temporary workaround for a type mismatch
+  // between the adapter from `@auth/prisma-adapter` and the `next-auth` v4 types.
+  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -23,16 +27,24 @@ export const authOptions: NextAuthOptions = {
         }
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
+          include: { accounts: true },
         });
         if (!user) {
           throw new Error('User not found! Please create an account.');
         }
-        if (user.provider === 'GOOGLE') {
+
+        const hasGoogleAccount = user.accounts.some((account) => account.provider === 'google');
+        if (hasGoogleAccount) {
           throw new Error(
             'This account is linked with Google. Please login via Google to proceed.'
           );
         }
-        const isValid = await comparePassword(credentials.password, user.password!);
+
+        if (!user.password) {
+          throw new Error('Please login using the method you originally signed up with.');
+        }
+
+        const isValid = await comparePassword(credentials.password, user.password);
         if (!isValid) {
           throw new Error('Incorrect password!');
         }
@@ -40,38 +52,24 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           name: user.name || undefined,
           email: user.email,
-          image: user.avatarUrl || undefined,
+          image: user.image || undefined,
         };
       },
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
-      if (account?.provider === 'credentials') return true;
-      if (account?.provider === 'google' && profile?.email) {
-        try {
-          let user = await prisma.user.findUnique({ where: { email: profile.email } });
-          if (user && user.provider === 'CUSTOM') {
-            return '/auth/login?error=AccountLinked';
-          }
-          if (!user) {
-            user = await prisma.user.create({
-              data: {
-                email: profile.email,
-                name: profile.name,
-                avatarUrl: profile.image,
-                isVerified: true,
-                provider: 'GOOGLE',
-              },
-            });
-          }
-          return true;
-        } catch (error) {
-          console.error('Error in google signin callback: ', error);
-          return false;
+    async signIn({ account, profile }) {
+      if (account?.provider === 'google') {
+        const user = await prisma.user.findUnique({
+          where: {
+            email: profile?.email,
+          },
+        });
+        if (user?.password) {
+          return '/auth/login?error=AccountLinked';
         }
       }
-      return false;
+      return true;
     },
     async session({ session, token }) {
       if (session.user) {
@@ -79,12 +77,12 @@ export const authOptions: NextAuthOptions = {
         session.userId = token.sub as string;
         const user = await prisma.user.findUnique({
           where: { id: token.sub as string },
-          select: { name: true, email: true, avatarUrl: true },
+          select: { name: true, email: true, image: true },
         });
         if (user) {
           session.user.name = user.name || undefined;
           session.user.email = user.email;
-          session.user.image = user.avatarUrl || undefined;
+          session.user.image = user.image || undefined;
         }
       }
       return session;

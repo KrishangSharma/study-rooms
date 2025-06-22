@@ -1,12 +1,10 @@
-import Sidebar from '@/components/core/UserSidebar/Sidebar';
+import ProfileNavigation from '@/components/core/ProfileTabs/ProfileTabs';
 
-export default function AccountLayout({ children }: { children: React.ReactNode }) {
+export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-screen flex items-start gap-5">
-      <aside className="w-1/6 h-[calc(100vh-81px)] border-r sticky top-[81px]">
-        <Sidebar />
-      </aside>
-      <main className="w-3/4">{children}</main>
+    <div className="w-screen min-h-screen">
+      <ProfileNavigation />
+      <main className="px-2 pt-5 sm-0 container mx-auto">{children}</main>
     </div>
   );
 }
