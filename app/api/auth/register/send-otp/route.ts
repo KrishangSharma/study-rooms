@@ -35,7 +35,6 @@ export async function POST(req: NextRequest) {
       },
     });
     // Send the unhashed OTP to the user VIA email
-    console.log('sending email...');
     await resend.emails.send({
       from: `studyiovibe.onboarding${process.env.RESEND_DOMAIN}`,
       to: email,

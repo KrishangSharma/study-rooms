@@ -10,26 +10,25 @@ datasource db {
 model User {
   id                 String               @id @default(uuid())
   email              String               @unique
-  password           String?
   name               String?
-  isVerified         Boolean              @default(false)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  PasswordResetToken PasswordResetToken[]
-  otps               UserOTP[]
-  emailVerified      DateTime?
+  password           String?
   image              String?
+  emailVerified      DateTime?
   accounts           Account[]
   sessions           Session[]
+  otps               UserOTP[]
+  PasswordResetToken PasswordResetToken[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 }
 
 model UserOTP {
   id        String   @id @default(uuid())
   otp       String
   userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])

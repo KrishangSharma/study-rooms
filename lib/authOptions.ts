@@ -58,17 +58,22 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ account, profile }) {
+    async signIn({ account, profile, user, email }) {
+      // Do not allow google login with credentials email
       if (account?.provider === 'google') {
         const user = await prisma.user.findUnique({
           where: {
             email: profile?.email,
           },
+          include: { accounts: true },
         });
-        if (user?.password) {
+        const hasGoogleAccount = user?.accounts.some((acc) => acc.provider === 'google');
+        if (!hasGoogleAccount) {
+          // Block login or prompt to link
           return '/auth/login?error=AccountLinked';
         }
       }
+
       return true;
     },
     async session({ session, token }) {
@@ -77,12 +82,27 @@ export const authOptions: NextAuthOptions = {
         session.userId = token.sub as string;
         const user = await prisma.user.findUnique({
           where: { id: token.sub as string },
-          select: { name: true, email: true, image: true },
+          select: {
+            name: true,
+            email: true,
+            image: true,
+            emailVerified: true,
+            accounts: { select: { provider: true } },
+            password: true,
+          },
         });
         if (user) {
           session.user.name = user.name || undefined;
           session.user.email = user.email;
           session.user.image = user.image || undefined;
+          session.user.isEmailVerified = !!user.emailVerified;
+          if (user.accounts.length > 0) {
+            session.user.provider = user.accounts[0].provider;
+          } else if (user.password) {
+            session.user.provider = 'credentials';
+          } else {
+            session.user.provider = undefined;
+          }
         }
       }
       return session;
@@ -95,8 +115,8 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: '/signin',
-    error: '/signin',
+    signIn: '/auth/login',
+    error: '/auth/login',
   },
   session: {
     strategy: 'jwt',

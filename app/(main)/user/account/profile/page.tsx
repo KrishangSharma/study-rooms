@@ -2,6 +2,7 @@
 
 import type React from 'react';
 import { toast } from 'sonner';
+import { CldImage } from 'next-cloudinary';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Input } from '@/components/ui/input';
@@ -9,40 +10,55 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { PasswordData, UserData } from '@/types/types';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Edit3, Save, X, Upload, Mail, Lock, Shield } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { PasswordData, Response, UserData } from '@/types/types';
 import { AvatarUploader } from '@/components/core/AvatarUploader';
-import { CldImage } from 'next-cloudinary';
+import { VerificationModal } from '@/components/core/VerificationDialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Loader2,
+  Edit3,
+  Save,
+  X,
+  Mail,
+  Shield,
+  CheckCircle,
+  AlertCircle,
+  Lock,
+} from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const UserDetailsPage = () => {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
 
   // Profile Management State
   const [userData, setUserData] = useState<UserData>({
     name: '',
     email: '',
     image: null,
-    hasGoogleConnection: false,
+    isEmailVerified: false,
+    hasGoogleConnection: session?.user.provider === 'google',
   });
   const [profileFormData, setProfileFormData] = useState<UserData>({
     name: '',
     email: '',
     image: null,
+    isEmailVerified: false,
     hasGoogleConnection: false,
   });
-  // Account Management State
+
+  // Modal State
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+
+  // Loading States
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [passwordData, setPasswordData] = useState<PasswordData>({
     newPassword: '',
     confirmPassword: '',
     otp: '',
   });
-  const [showOtpInput, setShowOtpInput] = useState(false);
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
-  const [isConnectingGoogle, setIsConnectingGoogle] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -52,6 +68,7 @@ const UserDetailsPage = () => {
         name: session?.user.name || '',
         email: session?.user.email || '',
         image: session?.user.image || '',
+        isEmailVerified: session?.user.isEmailVerified || false,
         hasGoogleConnection: false,
       };
 
@@ -85,9 +102,6 @@ const UserDetailsPage = () => {
       image: profileFormData.image,
     };
 
-    console.log('Profile update data ready to send:', updateData);
-
-    // Simulate API call
     await fetch('/api/user/profile', {
       method: 'PATCH',
       body: JSON.stringify(updateData),
@@ -109,17 +123,22 @@ const UserDetailsPage = () => {
     toast.info('Image uploaded. Click "Save Changes" to apply.');
   };
 
-  // Account Management Handlers
+  const handleVerificationSuccess = () => {
+    setUserData((prev) => ({ ...prev, isEmailVerified: true }));
+    // Update session data
+    update();
+  };
+
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.warning("Passwords don't match");
+      toast('New password and confirm password do not match.');
       return;
     }
 
-    if (passwordData.newPassword.length < 6) {
-      toast.error('Password is too short');
+    if (passwordData.newPassword.length < 8) {
+      toast('Password Too Short');
       return;
     }
 
@@ -132,15 +151,24 @@ const UserDetailsPage = () => {
         newPassword: passwordData.newPassword,
       };
 
-      console.log('OTP request data ready to send:', otpRequestData);
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'PATCH',
+        body: JSON.stringify(otpRequestData),
+        headers: {
+          'Content-type': 'application/json',
+        },
+      });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const resData = (await res.json()) as Response;
+
+      if (!res.ok) {
+        toast.error(resData.message);
+      } else {
+        toast.success(resData.message);
+      }
 
       setShowOtpInput(true);
       setIsPasswordLoading(false);
-
-      toast.success('OTP Sent');
     } else {
       // Second step: Verify OTP and update password
       const passwordUpdateData = {
@@ -149,37 +177,26 @@ const UserDetailsPage = () => {
         otp: passwordData.otp,
       };
 
-      console.log('Password update data ready to send:', passwordUpdateData);
+      const res = await fetch('/api/auth/reset-password/verify-otp', {
+        method: 'POST',
+        body: JSON.stringify(passwordUpdateData),
+        headers: {
+          'Content-type': 'application/json',
+        },
+      });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const resData = (await res.json()) as Response;
 
-      // Reset form
-      setPasswordData({ newPassword: '', confirmPassword: '', otp: '' });
-      setShowOtpInput(false);
+      if (!res.ok) {
+        toast.error(resData.message);
+      } else {
+        toast.success(resData.message);
+        // Optionally, reset form and state
+        setPasswordData({ newPassword: '', confirmPassword: '', otp: '' });
+        setShowOtpInput(false);
+      }
       setIsPasswordLoading(false);
-
-      toast.success('Password Updated');
     }
-  };
-
-  const handleGoogleConnection = async () => {
-    setIsConnectingGoogle(true);
-
-    const connectionData = {
-      userId: userData.email, // or user ID
-      provider: 'google',
-    };
-
-    console.log('Google connection data ready to send:', connectionData);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    setUserData((prev) => ({ ...prev, hasGoogleConnection: true }));
-    setIsConnectingGoogle(false);
-
-    toast.success('Google Connected');
   };
 
   if (status === 'loading') {
@@ -194,7 +211,7 @@ const UserDetailsPage = () => {
   }
 
   return (
-    <main className="w-full max-w-4xl mx-auto space-y-8 mb-8">
+    <main className="w-full max-w-4xl mx-auto space-y-8 mb-8 p-4">
       {/* Profile Management Section */}
       <Card>
         <CardHeader className="space-y-1">
@@ -203,7 +220,7 @@ const UserDetailsPage = () => {
             <CardTitle className="text-xl sm:text-2xl">Profile Management</CardTitle>
           </div>
           <CardDescription className="text-sm">
-            All your profile settings, at one place.
+            All your profile settings, at one place
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -325,66 +342,56 @@ const UserDetailsPage = () => {
             <CardTitle className="text-xl sm:text-2xl">Account Management</CardTitle>
           </div>
           <CardDescription className="text-sm">
-            Manage OAuth access, and update your password
+            Verify your account&nbsp;
+            {session?.user.provider === 'credentials' && 'and update your password'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
-          {/* Google Connection */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          {/* Verification Status */}
+          <div
+            className={`space-y-4 p-4 rounded-lg border transition-all duration-200 ${
+              userData.isEmailVerified
+                ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'
+                : 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800'
+            }`}
+          >
+            <div className="flex flex-col gap-3 sm:gap-0 sm:flex-row sm:items-center justify-between">
               <div className="space-y-1">
-                <h3 className="font-medium">Google Connection</h3>
+                <div className="flex items-center gap-2">
+                  {userData.isEmailVerified ? (
+                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  )}
+                  <h3 className="font-medium">Verification Status</h3>
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  Connect your Google account for easier sign-in
+                  {userData.isEmailVerified
+                    ? 'Your account is verified and you can access all features.'
+                    : 'Verify your account to unlock additional features and functionality.'}
                 </p>
               </div>
-              {userData.hasGoogleConnection && (
-                <Badge
-                  variant="secondary"
-                  className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                >
-                  Connected
+              {userData.isEmailVerified && (
+                <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-200">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Verified
                 </Badge>
               )}
             </div>
 
-            {!userData.hasGoogleConnection && (
+            {!userData.isEmailVerified && (
               <Button
                 variant="outline"
-                onClick={handleGoogleConnection}
-                disabled={isConnectingGoogle}
-                className="flex items-center gap-2"
+                onClick={() => setIsVerificationModalOpen(true)}
+                className="flex items-center gap-2 border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-950/30"
               >
-                {isConnectingGoogle ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <svg className="h-4 w-4" viewBox="0 0 24 24">
-                    <path
-                      fill="currentColor"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    />
-                  </svg>
-                )}
-                {isConnectingGoogle ? 'Connecting...' : 'Add Google Connection'}
+                <Mail className="h-4 w-4" />
+                Verify Account
               </Button>
             )}
           </div>
-
           <Separator />
-
-          {/* Password Update */}
+          {/* Update Password */}
           <div className="space-y-4">
             <div className="space-y-1">
               <h3 className="font-medium flex items-center gap-2">
@@ -465,6 +472,13 @@ const UserDetailsPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Verification Modal */}
+      <VerificationModal
+        isOpen={isVerificationModalOpen}
+        onClose={() => setIsVerificationModalOpen(false)}
+        onVerificationSuccess={handleVerificationSuccess}
+      />
     </main>
   );
 };

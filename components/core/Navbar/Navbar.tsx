@@ -11,11 +11,12 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { MobileNav } from './MobileNav';
+import { CldImage } from 'next-cloudinary';
 import { Button } from '@/components/ui/button';
 import { signOut, useSession } from 'next-auth/react';
 import { ThemeToggle } from '@/components/core/ThemeToggle';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CommandMenu } from '@/components/core/SearchCmd/SearchCommand';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogIn, Loader2, CircleUserRound, Archive, LogOut } from 'lucide-react';
 
 export default function Navbar() {
@@ -96,18 +97,14 @@ export default function Navbar() {
                     onMouseEnter={() => setOpen(true)}
                   >
                     <Avatar className="h-8 w-8 transition-transform hover:scale-110">
-                      {process.env.NODE_ENV === 'development' ? (
-                        <AvatarImage
-                          src={`/api/image-proxy?url=${encodeURIComponent(session.user?.image ?? '')}`}
-                          alt={session.user?.name ?? 'User'}
-                          onError={(e) => {
-                            e.currentTarget.src = '/default-avatar.png';
-                          }}
-                        />
-                      ) : (
-                        <AvatarImage
-                          src={session.user?.image || ''}
-                          alt={session.user?.name ?? 'User'}
+                      {session?.user.image && (
+                        <CldImage
+                          src={session?.user.image!}
+                          alt="Profile"
+                          width={1200}
+                          height={1200}
+                          crop="thumb"
+                          gravity="face"
                         />
                       )}
                       <AvatarFallback className="bg-primary/10 text-primary">

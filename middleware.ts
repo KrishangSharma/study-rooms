@@ -3,7 +3,7 @@ import { getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_ROUTES = ['/auth/login', '/auth/register', '/auth/verify', 'auth/forget-password'];
+const PUBLIC_ROUTES = ['/auth/login', '/auth/register', '/auth/verify', '/auth/forget-password'];
 const AUTH_ROUTES = ['/user/account'];
 
 export async function middleware(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect logged-in users away from public auth pages
   if (token && PUBLIC_ROUTES.includes(pathname)) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   // Block non-authenticated users from private pages

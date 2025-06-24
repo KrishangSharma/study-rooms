@@ -13,15 +13,13 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
-    //! Ye ID jo mil rhi hai, ye next-auth ki ID hai.. Apne ko, google login/creation ke callback mei, next-auth ki ID ki jagah, db ki id daalni hai, tabhi yaha updation hogi!!
     const userId = token.sub;
-    console.log('Recieved User ID: ', userId);
 
     const { name, email, image } = await req.json();
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { name, email, avatarUrl: image },
+      data: { name, email, image: image },
     });
 
     return Response.json({ message: 'Profile updated successfully!' }, { status: 200 });

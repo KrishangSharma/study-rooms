@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -105,7 +105,14 @@ export default function ResetPasswordPage() {
         )}
 
         <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? 'Updating...' : 'Update Password'}
+          {isSubmitting ? (
+            <>
+              <Loader2 className="animate-spin mr-1" />
+              Updating...
+            </>
+          ) : (
+            'Update Password'
+          )}
         </Button>
       </form>
     </main>

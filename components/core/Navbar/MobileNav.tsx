@@ -4,6 +4,7 @@ import Link from 'next/link';
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { CldImage } from 'next-cloudinary';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useSession, signOut } from 'next-auth/react';
@@ -21,8 +22,8 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/core/ThemeToggle';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CommandMenu } from '@/components/core/SearchCmd/SearchCommand';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import {
   DropdownMenu,
@@ -158,18 +159,14 @@ export function MobileNav() {
                     className="w-full justify-start gap-3 p-3 h-auto hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
                   >
                     <Avatar className="h-10 w-10">
-                      {process.env.NODE_ENV === 'development' ? (
-                        <AvatarImage
-                          src={`/api/image-proxy?url=${encodeURIComponent(session.user?.image ?? '')}`}
-                          alt={session.user?.name ?? 'User'}
-                          onError={(e) => {
-                            e.currentTarget.src = '/default-avatar.png';
-                          }}
-                        />
-                      ) : (
-                        <AvatarImage
-                          src={session.user?.image || ''}
-                          alt={session.user?.name ?? 'User'}
+                      {session?.user.image && (
+                        <CldImage
+                          src={session?.user.image!}
+                          alt="Profile"
+                          width={1200}
+                          height={1200}
+                          crop="thumb"
+                          gravity="face"
                         />
                       )}
                       <AvatarFallback className="bg-primary/10 text-primary font-semibold">

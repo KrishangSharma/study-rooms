@@ -76,7 +76,7 @@ export function CommandMenu({ isMobile = false }: CommandMenuProps) {
             <CommandItem onSelect={() => runCommand(() => router.push('/'))}>
               <span className="block">Home</span>
             </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => router.push('/user/account#profile'))}>
+            <CommandItem onSelect={() => runCommand(() => router.push('/user/account/profile'))}>
               <span>Profile</span>
             </CommandItem>
           </CommandGroup>

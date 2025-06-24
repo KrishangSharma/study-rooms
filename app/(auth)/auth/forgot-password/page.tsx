@@ -77,16 +77,6 @@ const ForgotPassword = () => {
                 Didn't receive the email? Check your spam folder or try again.
               </p>
             </div>
-            <div className="space-y-3">
-              <Button
-                onClick={handleBackToForm}
-                variant="outline"
-                className="w-full h-11 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Reset Form
-              </Button>
-            </div>
           </CardContent>
         </Card>
       ) : (
