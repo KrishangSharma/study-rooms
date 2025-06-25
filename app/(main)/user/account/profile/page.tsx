@@ -29,6 +29,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const UserDetailsPage = () => {
   const { data: session, status, update } = useSession();
+  console.log(session);
 
   // Profile Management State
   const [userData, setUserData] = useState<UserData>({
@@ -133,7 +134,7 @@ const UserDetailsPage = () => {
     e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast('New password and confirm password do not match.');
+      toast.error('New password and confirm password do not match.');
       return;
     }
 
@@ -342,7 +343,7 @@ const UserDetailsPage = () => {
             <CardTitle className="text-xl sm:text-2xl">Account Management</CardTitle>
           </div>
           <CardDescription className="text-sm">
-            Verify your account&nbsp;
+            Manage verification status&nbsp;
             {session?.user.provider === 'credentials' && 'and update your password'}
           </CardDescription>
         </CardHeader>
@@ -392,84 +393,88 @@ const UserDetailsPage = () => {
           </div>
           <Separator />
           {/* Update Password */}
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <h3 className="font-medium flex items-center gap-2">
-                <Lock className="h-4 w-4" />
-                Update Password
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Change your account password with email verification
-              </p>
-            </div>
-
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="new-password">New Password</Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    value={passwordData.newPassword}
-                    onChange={(e) =>
-                      setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))
-                    }
-                    placeholder="Enter new password"
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={(e) =>
-                      setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))
-                    }
-                    placeholder="Confirm new password"
-                    required
-                  />
-                </div>
+          {session?.user.provider === 'credentials' && (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <h3 className="font-medium flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Update Password
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Change your account password with email verification
+                </p>
               </div>
 
-              {showOtpInput && (
-                <div className="grid gap-2">
-                  <Label htmlFor="otp">Verification Code</Label>
-                  <Input
-                    id="otp"
-                    value={passwordData.otp}
-                    onChange={(e) => setPasswordData((prev) => ({ ...prev, otp: e.target.value }))}
-                    placeholder="Enter 6-digit code from email"
-                    maxLength={6}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Check your email for the verification code
-                  </p>
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input
+                      id="new-password"
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={(e) =>
+                        setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))
+                      }
+                      placeholder="Enter new password"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))
+                      }
+                      placeholder="Confirm new password"
+                      required
+                    />
+                  </div>
                 </div>
-              )}
 
-              <Button
-                type="submit"
-                disabled={isPasswordLoading}
-                className="flex items-center gap-2"
-              >
-                {isPasswordLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Lock className="h-4 w-4" />
+                {showOtpInput && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="otp">Verification Code</Label>
+                    <Input
+                      id="otp"
+                      value={passwordData.otp}
+                      onChange={(e) =>
+                        setPasswordData((prev) => ({ ...prev, otp: e.target.value }))
+                      }
+                      placeholder="Enter 6-digit code from email"
+                      maxLength={6}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Check your email for the verification code
+                    </p>
+                  </div>
                 )}
-                {isPasswordLoading
-                  ? showOtpInput
-                    ? 'Verifying...'
-                    : 'Sending OTP...'
-                  : showOtpInput
-                    ? 'Verify & Update Password'
-                    : 'Update Password'}
-              </Button>
-            </form>
-          </div>
+
+                <Button
+                  type="submit"
+                  disabled={isPasswordLoading}
+                  className="flex items-center gap-2"
+                >
+                  {isPasswordLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Lock className="h-4 w-4" />
+                  )}
+                  {isPasswordLoading
+                    ? showOtpInput
+                      ? 'Verifying...'
+                      : 'Sending OTP...'
+                    : showOtpInput
+                      ? 'Verify & Update Password'
+                      : 'Update Password'}
+                </Button>
+              </form>
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -28,3 +28,27 @@ export async function PATCH(req: NextRequest) {
     return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+    if (!token || !token.sub) {
+      return Response.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = token.sub;
+
+    // Delete user-related records (customize as needed)
+    await prisma.session.deleteMany({ where: { userId } });
+    await prisma.account.deleteMany({ where: { userId } });
+    await prisma.passwordResetToken.delete({ where: { id: userId } });
+    await prisma.userOTP.delete({ where: { id: userId } });
+    await prisma.user.delete({ where: { id: userId } });
+
+    return Response.json({ message: 'Account deleted successfully' }, { status: 200 });
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    return Response.json({ message: 'Failed to delete account' }, { status: 500 });
+  }
+}

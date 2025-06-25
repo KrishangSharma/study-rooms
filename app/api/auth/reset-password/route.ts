@@ -70,10 +70,8 @@ export async function PATCH(req: Request) {
         expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min expiry
       },
     });
-    // Dummy resend email function
-    console.log(`[DUMMY EMAIL] Sent password reset OTP ${otp} to ${email}`);
     await resend.emails.send({
-      from: `studyiovibe.help${process.env.RESEND_DOMAIN}`,
+      from: `help.studyiovibe${process.env.RESEND_DOMAIN}`,
       to: email,
       subject: 'Reset your StudyioVibe account password with this OTP.',
       react: PasswordReset({ otp: otp, username: user.name! }),

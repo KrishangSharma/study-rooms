@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, ArrowLeft } from 'lucide-react';
 
 // Zod schema for email validation
@@ -21,6 +21,8 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 const ForgotPassword = () => {
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [sentEmail, setSentEmail] = useState('');
+  const [countdown, setCountdown] = useState(0);
+  const [resendDisabled, setResendDisabled] = useState(false);
 
   const {
     register,
@@ -39,6 +41,17 @@ const ForgotPassword = () => {
           'Content-type': 'application/json',
         },
       });
+      const resData = await res.json();
+      if (!res.ok) {
+        if (res.status === 429 && resData.retryAfter) {
+          toast.error(resData.error || 'Too many requests. Please wait before trying again.');
+          setCountdown(resData.retryAfter);
+          setResendDisabled(true);
+        } else {
+          toast.error(resData.error || 'Failed to send reset email. Please try again.');
+        }
+        return;
+      }
       setSentEmail(data.email);
       setIsEmailSent(true);
       reset();
@@ -47,6 +60,15 @@ const ForgotPassword = () => {
       toast.error('Failed to send reset email. Please try again.');
     }
   };
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0 && resendDisabled) {
+      setResendDisabled(false);
+    }
+  }, [countdown, resendDisabled]);
 
   const handleBackToForm = () => {
     setIsEmailSent(false);
@@ -116,9 +138,13 @@ const ForgotPassword = () => {
               <Button
                 type="submit"
                 className="w-full h-11 bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 dark:text-gray-900 transition-colors duration-200"
-                disabled={isSubmitting}
+                disabled={isSubmitting || resendDisabled}
               >
-                {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+                {isSubmitting
+                  ? 'Sending...'
+                  : resendDisabled
+                    ? `Try again in ${countdown}s`
+                    : 'Send Reset Link'}
               </Button>
             </form>
           </CardContent>

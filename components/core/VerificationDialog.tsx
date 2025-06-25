@@ -91,10 +91,16 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
         },
       });
 
-      const resData = (await res.json()) as Response;
+      const resData = (await res.json()) as Response & { retryAfter?: number };
 
       if (!res.ok) {
-        toast.error(resData.message);
+        if (res.status === 429 && resData.retryAfter) {
+          toast.error(resData.message);
+          setCountdown(resData.retryAfter);
+          setResendDisabled(true);
+        } else {
+          toast.error(resData.message || 'An unexpected error occurred.');
+        }
         return;
       }
 
@@ -154,11 +160,6 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
   const handleResendOTP = async () => {
     if (resendDisabled) return;
 
-    clearErrors('otp');
-    setValue('otp', '');
-    setCountdown(30);
-    setResendDisabled(true);
-
     try {
       const response = await fetch('/api/auth/register/send-otp', {
         method: 'POST',
@@ -168,11 +169,21 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
         },
       });
 
-      const res = (await response.json()) as Response;
+      const resData = (await response.json()) as Response & { retryAfter?: number };
       if (!response.ok) {
-        toast.error(res.message);
+        if (response.status === 429 && resData.retryAfter) {
+          toast.error(resData.message);
+          setCountdown(resData.retryAfter);
+          setResendDisabled(true);
+        } else {
+          toast.error(resData.message || 'Failed to resend code. Please try again.');
+        }
       } else {
         toast.success('New verification code sent to your email.');
+        clearErrors('otp');
+        setValue('otp', '');
+        setCountdown(30);
+        setResendDisabled(true);
       }
     } catch (error) {
       toast.error('Failed to resend code. Please try again.');
@@ -221,12 +232,18 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
                 </span>
               </div>
 
-              <Button onClick={handleSendOtp} disabled={isLoading} className="w-full">
+              <Button
+                onClick={handleSendOtp}
+                disabled={isLoading || resendDisabled}
+                className="w-full"
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     Sending Code...
                   </>
+                ) : resendDisabled ? (
+                  `Try again in ${countdown}s`
                 ) : (
                   'Send Verification Code'
                 )}

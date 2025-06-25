@@ -1,10 +1,14 @@
 import { Resend } from 'resend';
+import { createRateLimiter, checkRateLimit } from '@/lib/ratelimit';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/password';
 import { OTPSent } from '@/react-email/emails/otp-sent';
 import { NextRequest, NextResponse } from 'next/server';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Rate Limit logic
+const rateLimiter = createRateLimiter({ window: 30, limit: 1 });
 
 // Function to create an OTP
 function generateOTP(length = 6): string {
@@ -17,6 +21,30 @@ function generateOTP(length = 6): string {
 export async function POST(req: NextRequest) {
   try {
     const { email } = await req.json();
+
+    // Rate limiter
+    const identifier = `otp-rate-limit:${email}`;
+    const rate = await checkRateLimit({
+      ratelimit: rateLimiter,
+      identifier,
+      retryAfterSeconds: 30,
+    });
+    if (rate.limited) {
+      const retryAfter = rate.retryAfter ?? 30;
+      return NextResponse.json(
+        {
+          message: `Too many OTP requests. Please wait before trying again.`,
+          retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+          },
+        }
+      );
+    }
+
     // Find the user
     const user = await prisma.user.findUnique({ where: { email: email } });
 

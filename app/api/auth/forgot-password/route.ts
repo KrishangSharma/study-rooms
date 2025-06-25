@@ -4,14 +4,35 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { hashPassword } from '@/lib/password';
 import PasswordResetEmail from '@/react-email/emails/password-reset-email';
+import { createRateLimiter, checkRateLimit } from '@/lib/ratelimit';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const rateLimiter = createRateLimiter({ window: 60, limit: 1 });
 
 export async function POST(req: Request) {
   const { email } = await req.json();
 
   if (!email) {
     return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+  }
+
+  // Rate limit check
+  const identifier = `forgot-password-rate-limit:${email}`;
+  const rate = await checkRateLimit({ ratelimit: rateLimiter, identifier, retryAfterSeconds: 60 });
+  if (rate.limited) {
+    const retryAfter = rate.retryAfter ?? 60;
+    return NextResponse.json(
+      {
+        error: 'Too many password reset requests. Please wait before trying again.',
+        retryAfter,
+      },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': retryAfter.toString(),
+        },
+      }
+    );
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
