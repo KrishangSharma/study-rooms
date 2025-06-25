@@ -57,7 +57,7 @@ export function ThemeToggle({ className }: { className?: string }) {
           <CurrentIcon className={iconClasses} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="mt-1">
         {Object.entries(iconMap).map(([key, Icon]) => (
           <DropdownMenuItem
             key={key}
