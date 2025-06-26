@@ -16,6 +16,7 @@ import { Search } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Kbd } from '@/components/ui/kbd';
 import { signOut, useSession } from 'next-auth/react';
+import { createRoom } from '@/lib/clientFunctions';
 
 interface CommandMenuProps {
   isMobile?: boolean;
@@ -79,6 +80,11 @@ export function CommandMenu({ isMobile = false }: CommandMenuProps) {
             <CommandItem onSelect={() => runCommand(() => router.push('/user/account/profile'))}>
               <span>Profile</span>
             </CommandItem>
+            {session?.user && (
+              <CommandItem onSelect={() => runCommand(() => createRoom(router))}>
+                <span>Create Room</span>
+              </CommandItem>
+            )}
           </CommandGroup>
           <CommandSeparator />
           <CommandGroup heading="User Actions">

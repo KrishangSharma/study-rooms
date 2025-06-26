@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const PUBLIC_ROUTES = ['/auth/login', '/auth/register', '/auth/verify', '/auth/forget-password'];
-const AUTH_ROUTES = ['/user/account'];
+const AUTH_ROUTES = ['/user/account', '/rooms/'];
 
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
@@ -24,5 +24,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/auth/:path*', '/user/:path*'],
+  matcher: ['/', '/auth/:path*', '/user/:path*', '/rooms/:path*'],
 };

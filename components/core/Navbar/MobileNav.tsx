@@ -81,17 +81,6 @@ export function MobileNav() {
         </SheetHeader>
 
         <div className="flex flex-col h-full">
-          {/* Search Section */}
-          <div className="px-3 py-4">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-            >
-              <CommandMenu isMobile />
-            </motion.div>
-          </div>
-
           {/* Navigation Links */}
           <div className="flex-1 px-3">
             <div className="space-y-2">
